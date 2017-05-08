@@ -25,7 +25,6 @@ public class Waker {
 		for (int i = 0; i < magic.length; i++) {
 			magic[i] = magicb.get(i).byteValue();
 		}
-		for(byte b: magic)System.out.println((byte)b);
 		this.port = port;
 	}
 	

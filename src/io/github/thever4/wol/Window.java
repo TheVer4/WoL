@@ -57,7 +57,7 @@ public class Window extends JFrame {
 					Waker w = new Waker(MAC.getText().toString().trim(), new Scanner(PORT.getText().toString().trim()).nextInt());
 					w.wake();
 				}
-				JOptionPane.showMessageDialog(null, "One of fields is empty or incorrect!", "Warning!", JOptionPane.INFORMATION_MESSAGE);
+				else JOptionPane.showMessageDialog(null, "One of fields is empty or incorrect!", "Warning!", JOptionPane.INFORMATION_MESSAGE);
 			}
 			
 			else if (e.getSource() == bclose) {

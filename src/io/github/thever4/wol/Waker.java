@@ -1,6 +1,5 @@
 package io.github.thever4.wol;
 
-import java.io.OutputStream;
 import java.net.*;
 import java.util.*;
 
@@ -9,17 +8,25 @@ import javax.swing.JOptionPane;
 public class Waker {
 
 	static ArrayList<String> broadcasts;
-	private String magic;
+	private byte[] magic;
+	private ArrayList<Byte> magicb;
 	private int port;
 	
 	
 	public Waker(String mac, int port) {
-		magic = "FFFFFF";
-		for (int i = 0; i < 16; i++) {
-			magic += mac;
+		magicb = new ArrayList<>();
+		for (int i = 0; i < 12; i++) {
+			magicb.add(Byte.parseByte("f", 16));
 		}
+		for (int j = 0; j < 16; j++) {
+			for (int i = 0; i < 12; i++) magicb.add(Byte.parseByte(Character.toString(mac.charAt(i)), 16));
+		}
+		magic = new byte[magicb.size()];
+		for (int i = 0; i < magic.length; i++) {
+			magic[i] = magicb.get(i).byteValue();
+		}
+		for(byte b: magic)System.out.println((byte)b);
 		this.port = port;
-		System.out.println(magic);
 	}
 	
 	public static void getBroadcast() {
@@ -43,19 +50,20 @@ public class Waker {
 		}
 	}
 	
-	@SuppressWarnings("resource")
 	public void wake() {
 		try {
 			Iterator<String> it = broadcasts.iterator();
 			while (it.hasNext()) {
 				String bcast = it.next().substring(1);
-				OutputStream os = new Socket(bcast, this.port).getOutputStream();
-				os.write(magic.getBytes());
-				os.flush();
+				DatagramPacket packet = new DatagramPacket(magic, magic.length, InetAddress.getByName(bcast), this.port);
+				DatagramSocket socket = new DatagramSocket();
+				socket.send(packet);
+				socket.close();
+				System.out.println("Sending packages on [" + bcast + "]");
 			}
 		}
 		catch (Exception e) {
-			
+			JOptionPane.showMessageDialog(null, "Unknown error while sending Magic package!", "Warning!", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }

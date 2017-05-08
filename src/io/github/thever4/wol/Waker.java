@@ -9,23 +9,33 @@ public class Waker {
 
 	static ArrayList<String> broadcasts;
 	private byte[] magic;
-	private ArrayList<Byte> magicb;
 	private int port;
 	
 	
 	public Waker(String mac, int port) {
-		magicb = new ArrayList<>();
-		for (int i = 0; i < 12; i++) {
-			magicb.add(Byte.parseByte("f", 16));
-		}
-		for (int j = 0; j < 16; j++) {
-			for (int i = 0; i < 12; i++) magicb.add(Byte.parseByte(Character.toString(mac.charAt(i)), 16));
-		}
-		magic = new byte[magicb.size()];
-		for (int i = 0; i < magic.length; i++) {
-			magic[i] = magicb.get(i).byteValue();
-		}
+		byte[] macb = getMacBytes(mac);
+		magic = new byte[6 * 17];
 		this.port = port;
+		for (int i = 0; i < 6; i++) {
+			magic[i] = (byte) 0xff;
+		}
+		for (int i = 6; i < magic.length; i += macb.length) {
+			System.arraycopy(macb, 0, magic, i, macb.length);
+		}
+	}
+	
+	private byte[] getMacBytes(String mac) {
+		byte[] bytes = new byte[6];
+		String[] hexademicalArr = mac.split("(:|-)");
+		if (hexademicalArr.length == 6) {
+			try {
+				for(int i = 0; i < 6; i++) {
+					bytes[i] = (byte) Integer.parseInt(hexademicalArr[i], 16);
+				}
+			}
+			catch (Exception e) {}
+		}
+		return bytes;
 	}
 	
 	public static void getBroadcast() {
@@ -59,10 +69,12 @@ public class Waker {
 				socket.send(packet);
 				socket.close();
 				System.out.println("Sending packages on [" + bcast + "]");
+				JOptionPane.showMessageDialog(null, "Package sent on [" + bcast + "]", "Success!", JOptionPane.PLAIN_MESSAGE);
 			}
 		}
 		catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Unknown error while sending Magic package!", "Warning!", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
 		}
 	}
 }
